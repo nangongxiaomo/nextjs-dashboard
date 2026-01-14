@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { generatePagination } from '@/app/lib/utils'
 import { usePathname, useSearchParams } from 'next/navigation'
+import type { Route } from 'next'
 
 export default function Pagination({ totalPages }: { totalPages: number }) {
   const pathname = usePathname()
@@ -72,7 +73,7 @@ function PaginationNumber({
   return isActive || position === 'middle' ? (
     <div className={className}>{page}</div>
   ) : (
-    <Link href={href} className={className}>
+    <Link href={href as Route} className={className}>
       {page}
     </Link>
   )
@@ -91,7 +92,7 @@ function PaginationArrow({ href, direction, isDisabled }: { href: string; direct
   return isDisabled ? (
     <div className={className}>{icon}</div>
   ) : (
-    <Link className={className} href={href}>
+    <Link className={className} href={href as Route}>
       {icon}
     </Link>
   )
