@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams()
@@ -11,21 +11,26 @@ export default function Search({ placeholder }: { placeholder: string }) {
 
   const isComposing = useRef(false)
 
-  const handleChange = debounce((e: React.SyntheticEvent<HTMLInputElement>) => {
-    const value = (e.target as HTMLInputElement).value
-    if (isComposing.current) {
-      return
-    }
+  const handleChange = useCallback(
+    (e: React.SyntheticEvent<HTMLInputElement>) => {
+      debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isComposing.current) {
+          return
+        }
 
-    const params = new URLSearchParams(searchParams)
-    params.set('page', '1')
-    if (value) {
-      params.set('query', value)
-    } else {
-      params.delete('query')
-    }
-    replace(`${pathname}?${params.toString()}`)
-  }, 300)
+        const value = e.target.value
+        const params = new URLSearchParams(searchParams)
+        params.set('page', '1')
+        if (value) {
+          params.set('query', value)
+        } else {
+          params.delete('query')
+        }
+        replace(`${pathname}?${params.toString()}`)
+      }, 300)
+    },
+    [searchParams, pathname, replace]
+  )
   const onCompositionEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
     isComposing.current = false
     handleChange(e)
