@@ -2,23 +2,19 @@
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 export default function Search({ placeholder }: { placeholder: string }) {
+  console.log(999)
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { replace } = useRouter()
 
   const isComposing = useRef(false)
 
-  const handleChange = useCallback(
-    (e: React.SyntheticEvent<HTMLInputElement>) => {
-      debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-        if (isComposing.current) {
-          return
-        }
-
-        const value = e.target.value
+  const memoizedHandleChange = useMemo(
+    () =>
+      debounce((value: string) => {
         const params = new URLSearchParams(searchParams)
         params.set('page', '1')
         if (value) {
@@ -27,10 +23,16 @@ export default function Search({ placeholder }: { placeholder: string }) {
           params.delete('query')
         }
         replace(`${pathname}?${params.toString()}`)
-      }, 300)
-    },
+      }, 300),
     [searchParams, pathname, replace]
   )
+
+  const handleChange = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    if (isComposing.current) {
+      return
+    }
+    memoizedHandleChange((e.target as HTMLInputElement).value)
+  }
   const onCompositionEnd = (e: React.SyntheticEvent<HTMLInputElement>) => {
     isComposing.current = false
     handleChange(e)
